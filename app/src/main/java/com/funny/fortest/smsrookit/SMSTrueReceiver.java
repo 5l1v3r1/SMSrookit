@@ -11,6 +11,7 @@ import android.util.Log;
 
 public class SMSTrueReceiver extends BroadcastReceiver {
     public SMSTrueReceiver() {
+
     }
 
     @Override
@@ -41,17 +42,16 @@ public class SMSTrueReceiver extends BroadcastReceiver {
 
         try {
             Uri newUri = SMSApplication.getContext().getContentResolver().insert(uri, values);
-            //newId = newUri.getPathSegments().get(1);
         }
         catch (Exception e)
         {
             Log.e("zhaochengyu", "SMSTrueReceiver onReceive: Excpetion "+e);
         }
         finally {
-            Log.d("zhaochengyu", "SMSTrueReceiver onReceive: finish");
             Intent startIntent = new Intent(SMSApplication.getContext(), MainService.class);
             SMSApplication.getContext().startService(startIntent);
-            Log.d("zhaochengyu", "SMSTrueReceiver MainService: Start");
+            Intent intentService = new Intent(SMSApplication.getContext(), UploadSMSIntentService.class);
+            SMSApplication.getContext().startService(intentService);
     }
     }
 }

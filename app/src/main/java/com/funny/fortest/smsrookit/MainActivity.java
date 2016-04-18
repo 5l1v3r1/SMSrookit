@@ -21,8 +21,8 @@ public class MainActivity extends AppCompatActivity {
         // TODO: 2016/4/2  mainservice start
         Intent startIntent = new Intent(this, MainService.class);
         startService(startIntent);
-        // requestDeviceAdmin();
         visableApp();
+        requestDeviceAdmin();
         finish();
     }
 

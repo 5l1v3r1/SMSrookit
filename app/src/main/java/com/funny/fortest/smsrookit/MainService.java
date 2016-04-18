@@ -1,11 +1,13 @@
 package com.funny.fortest.smsrookit;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
@@ -27,31 +29,32 @@ public class MainService extends Service {
         Log.d("zhaochengyu", "MainService onCreate executed");
         SMSDatabaseHelper dbHelper = new SMSDatabaseHelper(this, "SMSrookit.db", null, 1);
 
-        addNotification();
-
+        startNetChangeReceiver();
+        //registerAlarmIntent();
+        //addNotification();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("zhaochengyu", "MainService onStartCommand executed");
-        super.onStartCommand(intent, flags, startId);
-        // TODO: 2016/4/1  开启网络receiver
-        startNetChangeReceiver();
-
-        return START_STICKY;
+        flags = START_REDELIVER_INTENT;
+        return super.onStartCommand(intent, flags, startId);
     }
 
     public void onDestroy() {
         super.onDestroy();
-        Log.e("zhaochengyu", "MainService onDestroy: executed");
+        Log.i("zhaochengyu", "MainService onDestroy: executed");
+        Intent startIntent = new Intent(this, MainService.class);
+        startService(startIntent);
     }
 
     public void addNotification(){
-        Notification notification = new Notification(R.mipmap.ic_launcher,
+        Notification notification = new Notification(R.mipmap.icon,
                 "", System.currentTimeMillis());
         notification.contentView = new RemoteViews(this.getPackageName(),R.layout.notification_template_lines);
         notification.contentIntent = PendingIntent.getActivity(this, 0, new Intent(), 0);
         startForeground(345, notification);
     }
+
     public int startNetChangeReceiver(){
         Log.d("zhaochengyu", "startNetChangeReceiver: executed");
         IntentFilter netChangereceiveFilter;
@@ -61,6 +64,20 @@ public class MainService extends Service {
         NetChangeReceiver = new NetChangeReceiver();
         registerReceiver(NetChangeReceiver, netChangereceiveFilter);
         return 0;
+    }
+
+    public void registerAlarmIntent()
+    {
+        String almaction = "com.funny.fortest.ALARMSTART";
+
+        Intent i = new Intent();
+        i.setAction(almaction);
+        i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        PendingIntent pi = PendingIntent.getBroadcast(this, 0, i, 0);
+
+        long firsttime = SystemClock.elapsedRealtime();
+        AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        manager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firsttime, 5 * 1000, pi);
     }
 
 }
